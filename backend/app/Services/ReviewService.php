@@ -34,7 +34,7 @@ class ReviewService
             ->paginate(20);
     }
 
-    public function create(int $userId, string $requestId, array $data): Review
+    public function create(string $userId, string $requestId, array $data): Review
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -65,7 +65,7 @@ class ReviewService
         return $review->load('reviewer');
     }
 
-    public function toggleVisibility(string $reviewId, int $moderatorId, bool $visible): Review
+    public function toggleVisibility(string $reviewId, string $moderatorId, bool $visible): Review
     {
         $review = Review::findOrFail($reviewId);
         $review->update([
@@ -81,12 +81,12 @@ class ReviewService
         return $review->load(['reviewer', 'reviewee']);
     }
 
-    public function hideReview(string $reviewId, int $moderatorId): Review
+    public function hideReview(string $reviewId, string $moderatorId): Review
     {
         return $this->toggleVisibility($reviewId, $moderatorId, false);
     }
 
-    public function showReview(string $reviewId, int $moderatorId): Review
+    public function showReview(string $reviewId, string $moderatorId): Review
     {
         return $this->toggleVisibility($reviewId, $moderatorId, true);
     }

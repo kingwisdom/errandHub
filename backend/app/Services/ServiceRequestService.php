@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServiceRequestService
 {
-    public function listForUser(int $userId, string $role, array $filters): LengthAwarePaginator
+    public function listForUser(string $userId, string $role, array $filters): LengthAwarePaginator
     {
         $query = ServiceRequest::with(['client', 'agent', 'category', 'statuses']);
 
@@ -40,10 +40,12 @@ class ServiceRequestService
 
     public function findById(string $id): Model
     {
-        return ServiceRequest::with(['client', 'agent', 'category', 'statuses.user'])->findOrFail($id);
+        return ServiceRequest::with(['client', 'agent', 'category', 'statuses.user'])
+            ->withCount('applications')
+            ->findOrFail($id);
     }
 
-    public function create(int $clientId, array $data): ServiceRequest
+    public function create(string $clientId, array $data): ServiceRequest
     {
         $data['client_id'] = $clientId;
         $data['status'] = 'published';
@@ -60,7 +62,7 @@ class ServiceRequestService
         return $request->load(['client', 'category']);
     }
 
-    public function update(int $userId, string $requestId, array $data): ServiceRequest
+    public function update(string $userId, string $requestId, array $data): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -77,7 +79,7 @@ class ServiceRequestService
         return $request->load(['client', 'category']);
     }
 
-    public function accept(int $agentId, string $requestId): ServiceRequest
+    public function accept(string $agentId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -100,7 +102,7 @@ class ServiceRequestService
         ServiceRequestAccepted::dispatch($request->fresh(), $request->agent);
     }
 
-    public function confirm(int $clientId, string $requestId): ServiceRequest
+    public function confirm(string $clientId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -124,7 +126,7 @@ class ServiceRequestService
         return $request;
     }
 
-    public function startTravelling(int $agentId, string $requestId): ServiceRequest
+    public function startTravelling(string $agentId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -149,7 +151,7 @@ class ServiceRequestService
         return $request;
     }
 
-    public function markWaiting(int $agentId, string $requestId): ServiceRequest
+    public function markWaiting(string $agentId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -173,7 +175,7 @@ class ServiceRequestService
         return $request;
     }
 
-    public function startWork(int $agentId, string $requestId): ServiceRequest
+    public function startWork(string $agentId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -198,7 +200,7 @@ class ServiceRequestService
         return $request;
     }
 
-    public function complete(int $agentId, string $requestId): ServiceRequest
+    public function complete(string $agentId, string $requestId): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -222,7 +224,7 @@ class ServiceRequestService
         ServiceRequestCompleted::dispatch($request->fresh());
     }
 
-    public function cancel(int $userId, string $requestId, ?string $reason = null): ServiceRequest
+    public function cancel(string $userId, string $requestId, ?string $reason = null): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -277,7 +279,7 @@ class ServiceRequestService
         return $request;
     }
 
-    public function uploadPhotos(int $userId, string $requestId, array $photos): ServiceRequest
+    public function uploadPhotos(string $userId, string $requestId, array $photos): ServiceRequest
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -302,6 +304,7 @@ class ServiceRequestService
     public function browsePublished(array $filters): LengthAwarePaginator
     {
         $query = ServiceRequest::with(['client', 'category'])
+            ->withCount('applications')
             ->where('status', 'published');
 
         if (!empty($filters['category_id'])) {

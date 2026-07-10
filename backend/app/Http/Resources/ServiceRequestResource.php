@@ -26,6 +26,8 @@ class ServiceRequestResource extends JsonResource
             'cancellation_reason' => $this->cancellation_reason,
             'cancelled_by_id' => $this->cancelled_by_id,
             'expires_at' => $this->expires_at,
+            'applications_count' => $this->whenCounted('applications'),
+            'has_agent_assigned' => $this->agent_id !== null,
             'statuses' => ServiceRequestStatusResource::collection($this->whenLoaded('statuses')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

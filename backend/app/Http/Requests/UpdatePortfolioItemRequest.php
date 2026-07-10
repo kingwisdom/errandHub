@@ -8,7 +8,7 @@ class UpdatePortfolioItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->hasRole('agent');
     }
 
     public function rules(): array
@@ -19,6 +19,7 @@ class UpdatePortfolioItemRequest extends FormRequest
             'images' => 'sometimes|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'category_id' => 'nullable|exists:categories,id',
+            'service_request_id' => 'nullable|exists:service_requests,id',
         ];
     }
 }

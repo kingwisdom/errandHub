@@ -24,7 +24,7 @@ class AgentProfileController extends Controller
                 'min_rating', 'include_offline', 'latitude', 'longitude', 'distance_km',
                 'sort', 'per_page',
             ]))
-        );
+        )->response();
     }
 
     public function show($id): JsonResponse

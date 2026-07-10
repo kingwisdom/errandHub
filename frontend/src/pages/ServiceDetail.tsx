@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { MapPin, Clock, DollarSign, Award, Tag, CalendarPlus } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { MapPin, Clock, DollarSign, Award, Tag, CalendarPlus, Star, CheckCircle, Briefcase, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
@@ -14,6 +14,20 @@ export default function ServiceDetail() {
     queryKey: ['service', id],
     queryFn: () => api.get(`/services/${id}`).then((r) => r.data.data),
     enabled: !!id,
+  });
+
+  const contactMutation = useMutation({
+    mutationFn: () => api.post('/requests', {
+      title: `Inquiry: ${service?.title || 'Service'}`,
+      description: `Hi, I'm interested in your "${service?.title}" service. Could we discuss the details?`,
+      category_id: service?.category?.id || undefined,
+      priority: 'medium',
+      location: service?.location || undefined,
+    }),
+    onSuccess: (res) => {
+      const requestId = res.data.data.id;
+      navigate(`/requests/${requestId}/chat`);
+    },
   });
 
   if (isLoading) return <p className="text-text-secondary">Loading...</p>;
@@ -95,16 +109,51 @@ export default function ServiceDetail() {
 
           {service.agent && (
             <div className="pt-6 border-t border-border">
-              <h3 className="font-semibold text-text-primary mb-3">Service Provider</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-surface"
-                  style={{ backgroundColor: '#1E3A8A' }}>
-                  {service.agent.name?.charAt(0) || '?'}
-                </div>
-                <div>
-                  <p className="font-medium text-text-primary">{service.agent.name}</p>
-                  <a href={`/agents/${service.agent.id}`} className="text-xs" style={{ color: '#FF6B00' }}>
-                    View Profile
+              <h3 className="font-semibold text-text-primary mb-4">Service Provider</h3>
+              <div className="flex items-start gap-4">
+                {service.agent.avatar ? (
+                  <img src={imgUrl(service.agent.avatar)} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-border shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-surface shrink-0"
+                    style={{ backgroundColor: '#1E3A8A' }}>
+                    {service.agent.name?.charAt(0) || '?'}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="font-semibold text-text-primary truncate">{service.agent.name}</p>
+                    {service.agent.is_verified && <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#22C55E' }} />}
+                  </div>
+                  {service.agent.agent_profile && (
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary mb-2">
+                      {service.agent.agent_profile.avg_overall_rating && (
+                        <span className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          {Number(service.agent.agent_profile.avg_overall_rating).toFixed(1)}
+                          {service.agent.agent_profile.total_reviews_count > 0 && (
+                            <span>({service.agent.agent_profile.total_reviews_count})</span>
+                          )}
+                        </span>
+                      )}
+                      {service.agent.agent_profile.completed_jobs_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="w-3.5 h-3.5" />
+                          {service.agent.agent_profile.completed_jobs_count} jobs
+                        </span>
+                      )}
+                      {service.agent.agent_profile.experience_years && (
+                        <span className="flex items-center gap-1">
+                          <Award className="w-3.5 h-3.5" />
+                          {service.agent.agent_profile.experience_years}y exp
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {service.agent.agent_profile?.bio && (
+                    <p className="text-sm text-text-secondary line-clamp-2 mb-2">{service.agent.agent_profile.bio}</p>
+                  )}
+                  <a href={`/agents/${service.agent.agent_profile?.id || service.agent.id}`} className="text-sm font-medium" style={{ color: '#FF6B00' }}>
+                    View Full Profile
                   </a>
                 </div>
               </div>
@@ -112,10 +161,26 @@ export default function ServiceDetail() {
           )}
 
           {user && user.role === 'client' && service.status === 'active' && (
-            <button onClick={() => navigate(`/services/${service.id}/book`)}
-              className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium text-surface px-6 py-3 rounded-xl transition-colors"
-              style={{ backgroundColor: '#FF6B00' }}>
-              <CalendarPlus className="w-4 h-4" /> Book This Service
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button onClick={() => contactMutation.mutate()}
+                disabled={contactMutation.isPending}
+                className="flex-1 flex items-center justify-center gap-2 text-sm font-medium px-6 py-3 rounded-xl border-2 transition-colors"
+                style={{ borderColor: '#FF6B00', color: '#FF6B00' }}>
+                <MessageCircle className="w-4 h-4" />
+                {contactMutation.isPending ? 'Sending...' : 'Message Agent'}
+              </button>
+              <button onClick={() => navigate(`/services/${service.id}/book`)}
+                className="flex-1 flex items-center justify-center gap-2 text-sm font-medium text-surface px-6 py-3 rounded-xl transition-colors"
+                style={{ backgroundColor: '#FF6B00' }}>
+                <CalendarPlus className="w-4 h-4" /> Book This Service
+              </button>
+            </div>
+          )}
+          {(!user || user.role !== 'client') && service.status === 'active' && (
+            <button onClick={() => navigate(user ? '/requests/create' : '/login')}
+              className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium px-6 py-3 rounded-xl border-2 transition-colors"
+              style={{ borderColor: '#FF6B00', color: '#FF6B00' }}>
+              <MessageCircle className="w-4 h-4" /> {user ? 'Contact Agent' : 'Login to Contact'}
             </button>
           )}
         </div>

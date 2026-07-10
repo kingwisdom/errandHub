@@ -16,12 +16,12 @@ class AdminReviewController extends Controller
 
     public function index(): JsonResponse
     {
-        return ReviewResource::collection($this->reviewService->listAll());
+        return ReviewResource::collection($this->reviewService->listAll())->response();
     }
 
     public function flagged(): JsonResponse
     {
-        return ReviewResource::collection($this->reviewService->listFlagged());
+        return ReviewResource::collection($this->reviewService->listFlagged())->response();
     }
 
     public function hide(Request $request, $id): JsonResponse

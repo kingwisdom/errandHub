@@ -13,7 +13,7 @@ class ServiceListingService
         'newest', 'price_asc', 'price_desc', 'experience',
     ];
 
-    public function listForAgent(int $agentId, array $filters): LengthAwarePaginator
+    public function listForAgent(string $agentId, array $filters): LengthAwarePaginator
     {
         $query = ServiceListing::with(['category', 'agent'])
             ->where('agent_id', $agentId);
@@ -31,14 +31,14 @@ class ServiceListingService
         return ServiceListing::with(['agent', 'agent.agentProfile', 'category'])->findOrFail($id);
     }
 
-    public function create(int $agentId, array $data): ServiceListing
+    public function create(string $agentId, array $data): ServiceListing
     {
         $data['agent_id'] = $agentId;
 
         return ServiceListing::create($data)->load(['agent', 'category']);
     }
 
-    public function update(int $userId, string $id, array $data): ServiceListing
+    public function update(string $userId, string $id, array $data): ServiceListing
     {
         $listing = ServiceListing::findOrFail($id);
 
@@ -51,7 +51,7 @@ class ServiceListingService
         return $listing->load(['agent', 'category']);
     }
 
-    public function delete(int $userId, string $id): void
+    public function delete(string $userId, string $id): void
     {
         $listing = ServiceListing::findOrFail($id);
 
@@ -128,7 +128,7 @@ class ServiceListingService
             ->paginate((int) ($filters['per_page'] ?? 20));
     }
 
-    public function uploadPhotos(int $userId, string $id, array $photos): ServiceListing
+    public function uploadPhotos(string $userId, string $id, array $photos): ServiceListing
     {
         $listing = ServiceListing::findOrFail($id);
 

@@ -29,7 +29,7 @@ export default function ServicesBrowse() {
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => api.get('/categories').then((r) => r.data),
+    queryFn: () => api.get('/categories').then((r) => r.data.data),
   });
 
   const clearFilters = () => {

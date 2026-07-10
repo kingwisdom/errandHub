@@ -19,7 +19,7 @@ class ReviewController extends Controller
     {
         return ReviewResource::collection(
             $this->reviewService->listForUser($userId)
-        );
+        )->response();
     }
 
     public function store(StoreReviewRequest $request, $requestId): JsonResponse

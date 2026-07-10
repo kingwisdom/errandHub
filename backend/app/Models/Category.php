@@ -44,4 +44,9 @@ class Category extends Model
     {
         return $this->hasMany(ServiceRequest::class);
     }
+
+    public function serviceListings(): HasMany
+    {
+        return $this->hasMany(ServiceListing::class);
+    }
 }

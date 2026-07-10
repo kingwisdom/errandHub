@@ -19,6 +19,7 @@ class PortfolioItem extends Model
         'description',
         'images',
         'category_id',
+        'service_request_id',
     ];
 
     protected function casts(): array
@@ -36,5 +37,10 @@ class PortfolioItem extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function serviceRequest(): BelongsTo
+    {
+        return $this->belongsTo(ServiceRequest::class);
     }
 }

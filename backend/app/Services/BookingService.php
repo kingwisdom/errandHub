@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookingService
 {
-    public function listForUser(int $userId, string $role): LengthAwarePaginator
+    public function listForUser(string $userId, string $role): LengthAwarePaginator
     {
         $query = Booking::with(['client', 'provider', 'serviceRequest', 'serviceListing']);
 
@@ -22,12 +22,12 @@ class BookingService
         return $query->latest()->paginate(20);
     }
 
-    public function findById(int|string $id): Model
+    public function findById(string $id): Model
     {
         return Booking::with(['client', 'provider', 'serviceRequest', 'serviceListing'])->findOrFail($id);
     }
 
-    public function book(int $clientId, int $providerId, array $data): Booking
+    public function book(string $clientId, string $providerId, array $data): Booking
     {
         $data['client_id'] = $clientId;
         $data['provider_id'] = $providerId;
@@ -38,7 +38,7 @@ class BookingService
         return $booking->load(['client', 'provider', 'serviceRequest', 'serviceListing']);
     }
 
-    public function accept(int $userId, int|string $bookingId): Booking
+    public function accept(string $userId, string $bookingId): Booking
     {
         $booking = Booking::findOrFail($bookingId);
 
@@ -57,7 +57,7 @@ class BookingService
         return $booking->load(['client', 'provider', 'serviceRequest', 'serviceListing']);
     }
 
-    public function decline(int $userId, int|string $bookingId, ?string $reason = null): Booking
+    public function decline(string $userId, string $bookingId, ?string $reason = null): Booking
     {
         $booking = Booking::findOrFail($bookingId);
 
@@ -79,7 +79,7 @@ class BookingService
         return $booking->load(['client', 'provider', 'serviceRequest', 'serviceListing']);
     }
 
-    public function reschedule(int $userId, int|string $bookingId, string $newDate): Booking
+    public function reschedule(string $userId, string $bookingId, string $newDate): Booking
     {
         $booking = Booking::findOrFail($bookingId);
 
@@ -101,7 +101,7 @@ class BookingService
         return $booking->load(['client', 'provider', 'serviceRequest', 'serviceListing']);
     }
 
-    public function cancel(int $userId, int|string $bookingId): Booking
+    public function cancel(string $userId, string $bookingId): Booking
     {
         $booking = Booking::findOrFail($bookingId);
 
@@ -120,7 +120,7 @@ class BookingService
         return $booking->load(['client', 'provider', 'serviceRequest', 'serviceListing']);
     }
 
-    public function complete(int $providerId, int|string $bookingId): Booking
+    public function complete(string $providerId, string $bookingId): Booking
     {
         $booking = Booking::findOrFail($bookingId);
 

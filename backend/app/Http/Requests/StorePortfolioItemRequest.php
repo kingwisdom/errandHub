@@ -19,6 +19,7 @@ class StorePortfolioItemRequest extends FormRequest
             'images' => 'required|array|min:1',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'category_id' => 'nullable|exists:categories,id',
+            'service_request_id' => 'nullable|exists:service_requests,id',
         ];
     }
 }

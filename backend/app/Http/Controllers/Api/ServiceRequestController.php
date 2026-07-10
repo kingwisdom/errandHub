@@ -26,7 +26,7 @@ class ServiceRequestController extends Controller
                 $user->role,
                 $request->only(['status', 'category_id'])
             )
-        );
+        )->response();
     }
 
     public function store(StoreServiceRequestRequest $request): JsonResponse

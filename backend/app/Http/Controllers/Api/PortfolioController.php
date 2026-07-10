@@ -19,14 +19,14 @@ class PortfolioController extends Controller
     {
         return PortfolioResource::collection(
             $this->portfolioService->listForAgent(request()->user()->id)
-        );
+        )->response();
     }
 
     public function showAgent($agentId): JsonResponse
     {
         return PortfolioResource::collection(
             $this->portfolioService->listPublic($agentId)
-        );
+        )->response();
     }
 
     public function store(StorePortfolioItemRequest $request): JsonResponse
@@ -60,5 +60,12 @@ class PortfolioController extends Controller
         $this->portfolioService->delete(request()->user()->id, $id);
 
         return response()->json(['message' => 'Portfolio item deleted']);
+    }
+
+    public function completedRequests(): JsonResponse
+    {
+        $requests = $this->portfolioService->getCompletedRequests(request()->user()->id);
+
+        return response()->json(['data' => $requests]);
     }
 }

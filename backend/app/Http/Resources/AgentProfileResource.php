@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,11 +10,19 @@ class AgentProfileResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $skillIds = $this->skills ?? [];
+
+        $skillNames = collect($skillIds)->map(function ($id) {
+            $cat = Category::find($id);
+            return $cat?->name;
+        })->filter()->values()->all();
+
         return [
             'id' => $this->id,
             'user' => UserResource::make($this->whenLoaded('user')),
             'bio' => $this->bio,
             'skills' => $this->skills,
+            'skill_names' => $skillNames,
             'languages' => $this->languages,
             'coverage_area' => $this->coverage_area,
             'vehicle' => $this->vehicle,

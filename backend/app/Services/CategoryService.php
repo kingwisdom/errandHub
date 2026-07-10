@@ -16,7 +16,7 @@ class CategoryService
             ->get();
     }
 
-    public function findById(int $id): Category
+    public function findById(string $id): Category
     {
         return Category::with('parent', 'children')->findOrFail($id);
     }

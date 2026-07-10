@@ -77,4 +77,9 @@ class ServiceRequest extends Model
     {
         return $this->hasOne(Review::class);
     }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(ErrandApplication::class);
+    }
 }

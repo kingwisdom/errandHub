@@ -1,11 +1,17 @@
 <?php
 
+use App\Http\Controllers\Api\AdminAnalyticsController;
+use App\Http\Controllers\Api\AdminCategoryController;
+use App\Http\Controllers\Api\AdminRequestController;
 use App\Http\Controllers\Api\AdminReviewController;
+use App\Http\Controllers\Api\AdminServiceController;
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AgentProfileController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ErrandApplicationController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PortfolioController;
@@ -30,6 +36,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/agents/{agentId}/portfolio', [PortfolioController::class, 'showAgent']);
 
     Route::get('/requests/browse', [ServiceRequestController::class, 'browsePublished']);
+    Route::get('/requests/{id}', [ServiceRequestController::class, 'show']);
     Route::get('/services/browse', [ServiceListingController::class, 'browsePublished']);
     Route::get('/services/{id}', [ServiceListingController::class, 'show']);
 });
@@ -43,7 +50,6 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::put('/my-profile/{id}', [AgentProfileController::class, 'update']);
 
     Route::apiResource('requests', ServiceRequestController::class)->except(['destroy']);
-    Route::get('/requests/{id}', [ServiceRequestController::class, 'show']);
     Route::post('/requests/{id}/accept', [ServiceRequestController::class, 'accept']);
     Route::post('/requests/{id}/confirm', [ServiceRequestController::class, 'confirm']);
     Route::post('/requests/{id}/start-travelling', [ServiceRequestController::class, 'startTravelling']);
@@ -67,6 +73,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::post('/avatar', [AuthController::class, 'updateAvatar']);
 
     Route::get('/portfolio', [PortfolioController::class, 'index']);
+    Route::get('/portfolio/completed-requests', [PortfolioController::class, 'completedRequests']);
     Route::post('/portfolio', [PortfolioController::class, 'store']);
     Route::get('/portfolio/{id}', [PortfolioController::class, 'show']);
     Route::put('/portfolio/{id}', [PortfolioController::class, 'update']);
@@ -84,14 +91,31 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
     Route::post('/verification-requests', [VerificationController::class, 'submit']);
     Route::get('/verification-requests', [VerificationController::class, 'myRequests']);
-    Route::get('/admin/verification-requests/pending', [VerificationController::class, 'pending']);
-    Route::post('/admin/verification-requests/{id}/approve', [VerificationController::class, 'approve']);
-    Route::post('/admin/verification-requests/{id}/reject', [VerificationController::class, 'reject']);
+    Route::get('/admin/verification-requests/pending', [VerificationController::class, 'pending'])->middleware('role:super-admin');
+    Route::get('/admin/verification-requests', [VerificationController::class, 'all'])->middleware('role:super-admin');
+    Route::post('/admin/verification-requests/{id}/approve', [VerificationController::class, 'approve'])->middleware('role:super-admin');
+    Route::post('/admin/verification-requests/{id}/reject', [VerificationController::class, 'reject'])->middleware('role:super-admin');
 
     Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->middleware('role:super-admin');
     Route::get('/admin/reviews/flagged', [AdminReviewController::class, 'flagged'])->middleware('role:super-admin');
     Route::post('/admin/reviews/{id}/hide', [AdminReviewController::class, 'hide'])->middleware('role:super-admin');
     Route::post('/admin/reviews/{id}/show', [AdminReviewController::class, 'show'])->middleware('role:super-admin');
+
+    Route::get('/admin/users', [AdminUserController::class, 'index'])->middleware('role:super-admin');
+    Route::get('/admin/users/{id}', [AdminUserController::class, 'show'])->middleware('role:super-admin');
+    Route::post('/admin/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->middleware('role:super-admin');
+
+    Route::get('/admin/services', [AdminServiceController::class, 'index'])->middleware('role:super-admin');
+    Route::post('/admin/services/{id}/status', [AdminServiceController::class, 'updateStatus'])->middleware('role:super-admin');
+
+    Route::get('/admin/requests', [AdminRequestController::class, 'index'])->middleware('role:super-admin');
+
+    Route::get('/admin/categories', [AdminCategoryController::class, 'index'])->middleware('role:super-admin');
+    Route::post('/admin/categories', [AdminCategoryController::class, 'store'])->middleware('role:super-admin');
+    Route::put('/admin/categories/{id}', [AdminCategoryController::class, 'update'])->middleware('role:super-admin');
+    Route::delete('/admin/categories/{id}', [AdminCategoryController::class, 'destroy'])->middleware('role:super-admin');
+
+    Route::get('/admin/analytics', [AdminAnalyticsController::class, 'index'])->middleware('role:super-admin');
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
@@ -99,6 +123,13 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::get('/notifications/preferences', [NotificationController::class, 'preferences']);
     Route::put('/notifications/preferences', [NotificationController::class, 'updatePreferences']);
+
+    Route::post('/errand-applications', [ErrandApplicationController::class, 'store']);
+    Route::post('/errand-applications/{id}/withdraw', [ErrandApplicationController::class, 'withdraw']);
+    Route::post('/errand-applications/{id}/accept', [ErrandApplicationController::class, 'accept']);
+    Route::post('/errand-applications/{id}/reject', [ErrandApplicationController::class, 'reject']);
+    Route::get('/requests/{requestId}/applications', [ErrandApplicationController::class, 'forRequest']);
+    Route::get('/my-applications', [ErrandApplicationController::class, 'myApplications']);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 });

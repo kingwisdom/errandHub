@@ -1,12 +1,25 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, Car, Globe, Award, CheckCircle, Clock } from 'lucide-react';
+import { MapPin, Car, Globe, Award, CheckCircle, Clock, Images, Tag, CheckSquare } from 'lucide-react';
 import api from '../services/api';
+import PortfolioDetailModal from '../components/PortfolioDetailModal';
 
 const imgUrl = (path: string) => `${api.defaults.baseURL?.replace('/api', '') || 'http://localhost:8000'}/storage/${path}`;
 
+interface PortfolioItem {
+  id: string;
+  title: string;
+  description?: string;
+  images: string[];
+  category?: { id: string; name: string; slug: string };
+  service_request?: { id: string; title: string; status: string; completed_at: string };
+}
+
 export default function AgentDetail() {
   const { id } = useParams();
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+
   const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', id],
     queryFn: () => api.get(`/agents/${id}`).then((r) => r.data.data),
@@ -95,14 +108,14 @@ export default function AgentDetail() {
           )}
         </div>
 
-        {agent.skills?.length > 0 && (
+        {agent.skill_names?.length > 0 && (
           <div className="mb-6">
             <h3 className="font-semibold text-text-primary mb-3">Skills & Categories</h3>
             <div className="flex flex-wrap gap-2">
-              {agent.skills.map((skill: number, i: number) => (
+              {agent.skill_names.map((name: string, i: number) => (
                 <span key={i} className="px-3 py-1.5 rounded-lg text-sm font-medium text-surface"
                   style={{ backgroundColor: '#1E3A8A' }}>
-                  Skill #{skill}
+                  {name}
                 </span>
               ))}
             </div>
@@ -133,23 +146,65 @@ export default function AgentDetail() {
 
       {portfolio?.length > 0 && (
         <div className="bg-surface rounded-2xl shadow-sm border border-border p-8">
-          <h3 className="font-semibold text-text-primary mb-4">Portfolio</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {portfolio.map((item: { id: number; title: string; description?: string; images: string[] }) => (
-              <div key={item.id} className="rounded-xl overflow-hidden border border-border group">
-                <div className="aspect-square overflow-hidden">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-text-primary">Completed Tasks & Portfolio</h3>
+            <span className="text-sm text-text-secondary">{portfolio.length} {portfolio.length === 1 ? 'item' : 'items'}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {portfolio.map((item: PortfolioItem) => (
+              <button
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="text-left rounded-xl overflow-hidden border border-border group hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-video overflow-hidden relative bg-gray-100">
                   {item.images[0] && (
-                    <img src={imgUrl(item.images[0])} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img
+                      src={imgUrl(item.images[0])}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )}
+                  {item.images.length > 1 && (
+                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-black/60 text-white">
+                      <Images className="w-3 h-3" />
+                      {item.images.length}
+                    </span>
+                  )}
+                  {item.service_request && (
+                    <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-500 text-white">
+                      <CheckSquare className="w-3 h-3" />
+                      Completed
+                    </span>
                   )}
                 </div>
-                <div className="p-3">
-                  <p className="text-sm font-medium text-text-primary">{item.title}</p>
-                  {item.description && <p className="text-xs text-text-secondary mt-0.5">{item.description}</p>}
+                <div className="p-3 space-y-1.5">
+                  <p className="text-sm font-medium text-text-primary line-clamp-1">{item.title}</p>
+                  {item.description && (
+                    <p className="text-xs text-text-secondary line-clamp-2">{item.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.category && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700">
+                        <Tag className="w-2.5 h-2.5" />
+                        {item.category.name}
+                      </span>
+                    )}
+                    {item.service_request && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-green-50 text-green-700">
+                        {item.service_request.title}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
+      )}
+
+      {selectedItem && (
+        <PortfolioDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
     </div>
   );

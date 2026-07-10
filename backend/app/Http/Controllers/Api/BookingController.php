@@ -21,7 +21,7 @@ class BookingController extends Controller
 
         return BookingResource::collection(
             $this->bookingService->listForUser($user->id, $user->role)
-        );
+        )->response();
     }
 
     public function store(StoreBookingRequest $request): JsonResponse

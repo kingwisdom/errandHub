@@ -24,7 +24,7 @@ export default function ProfileBuilder() {
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => api.get('/categories').then((r) => r.data),
+    queryFn: () => api.get('/categories').then((r) => r.data.data),
   });
 
   useEffect(() => {

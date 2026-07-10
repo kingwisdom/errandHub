@@ -38,16 +38,22 @@ export default function Layout() {
                   <Link to="/services" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                     Services
                   </Link>
+                  <Link to="/errands" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
+                    Errands
+                  </Link>
                   <Link to="/bookings" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                     Bookings
                   </Link>
                   <Link to="/agents" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                     Find Agents
                   </Link>
-                  {user.role === 'agent' ? (
+                    {user.role === 'agent' ? (
                     <>
                       <Link to="/my-profile" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                         My Profile
+                      </Link>
+                      <Link to="/my-applications" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
+                        My Applications
                       </Link>
                       <Link to="/services/my" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                         My Services
@@ -56,11 +62,11 @@ export default function Layout() {
                         Portfolio
                       </Link>
                     </>
-                  ) : (
+                  ) : user.role === 'client' ? (
                     <Link to="/requests/create" className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors">
                       Post Request
                     </Link>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
@@ -98,16 +104,18 @@ export default function Layout() {
             <Link to="/requests" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Requests</Link>
             <Link to="/bookings" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Bookings</Link>
             <Link to="/services" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Services</Link>
+            <Link to="/errands" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Errands</Link>
             <Link to="/agents" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Find Agents</Link>
             {user.role === 'agent' ? (
               <>
                 <Link to="/my-profile" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>My Profile</Link>
+                <Link to="/my-applications" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>My Applications</Link>
                 <Link to="/services/my" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>My Services</Link>
                 <Link to="/portfolio" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Portfolio</Link>
               </>
-            ) : (
+            ) : user.role === 'client' ? (
               <Link to="/requests/create" className="block text-text-secondary text-sm" onClick={() => setMobileMenuOpen(false)}>Post Request</Link>
-            )}
+            ) : null}
             <button onClick={handleLogout} className="block text-error-500 text-sm">Logout</button>
           </div>
         )}

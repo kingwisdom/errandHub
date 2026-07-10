@@ -23,7 +23,7 @@ class ServiceListingController extends Controller
                 $request->user()->id,
                 $request->only(['status'])
             )
-        );
+        )->response();
     }
 
     public function store(StoreServiceListingRequest $request): JsonResponse

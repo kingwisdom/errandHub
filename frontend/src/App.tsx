@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminLayout from './components/AdminLayout';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -27,7 +29,17 @@ const MyServices = lazy(() => import('./pages/MyServices'));
 const MyBookings = lazy(() => import('./pages/MyBookings'));
 const BookingForm = lazy(() => import('./pages/BookingForm'));
 const AdminReviews = lazy(() => import('./pages/AdminReviews'));
+const AdminVerifications = lazy(() => import('./pages/AdminVerifications'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminServices = lazy(() => import('./pages/AdminServices'));
+const AdminRequests = lazy(() => import('./pages/AdminRequests'));
+const AdminCategories = lazy(() => import('./pages/AdminCategories'));
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const ErrandsBrowse = lazy(() => import('./pages/ErrandsBrowse'));
+const ErrandDetail = lazy(() => import('./pages/ErrandDetail'));
+const ErrandApplications = lazy(() => import('./pages/ErrandApplications'));
+const MyApplications = lazy(() => import('./pages/MyApplications'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30000 } },
@@ -47,6 +59,20 @@ export default function App() {
       <BrowserRouter>
         <ErrorBoundary>
           <Routes>
+            {/* Admin routes — separate layout with vertical sidebar */}
+            <Route element={<AdminRoute />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin/analytics" element={<Suspense fallback={<PageFallback />}><AdminAnalytics /></Suspense>} />
+                <Route path="/admin/verifications" element={<Suspense fallback={<PageFallback />}><AdminVerifications /></Suspense>} />
+                <Route path="/admin/users" element={<Suspense fallback={<PageFallback />}><AdminUsers /></Suspense>} />
+                <Route path="/admin/services" element={<Suspense fallback={<PageFallback />}><AdminServices /></Suspense>} />
+                <Route path="/admin/requests" element={<Suspense fallback={<PageFallback />}><AdminRequests /></Suspense>} />
+                <Route path="/admin/reviews" element={<Suspense fallback={<PageFallback />}><AdminReviews /></Suspense>} />
+                <Route path="/admin/categories" element={<Suspense fallback={<PageFallback />}><AdminCategories /></Suspense>} />
+              </Route>
+            </Route>
+
+            {/* All other routes — standard layout with top navbar */}
             <Route element={<Layout />}>
               <Route path="/" element={<Suspense fallback={<PageFallback />}><Home /></Suspense>} />
               <Route path="/login" element={<Suspense fallback={<PageFallback />}><Login /></Suspense>} />
@@ -58,6 +84,8 @@ export default function App() {
               <Route path="/agents/:id" element={<Suspense fallback={<PageFallback />}><AgentDetail /></Suspense>} />
               <Route path="/services" element={<Suspense fallback={<PageFallback />}><ServicesBrowse /></Suspense>} />
               <Route path="/services/:id" element={<Suspense fallback={<PageFallback />}><ServiceDetail /></Suspense>} />
+              <Route path="/errands" element={<Suspense fallback={<PageFallback />}><ErrandsBrowse /></Suspense>} />
+              <Route path="/errands/:id" element={<Suspense fallback={<PageFallback />}><ErrandDetail /></Suspense>} />
               <Route path="/requests/browse" element={<Suspense fallback={<PageFallback />}><MyRequests /></Suspense>} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Suspense fallback={<PageFallback />}><Dashboard /></Suspense>} />
@@ -72,8 +100,9 @@ export default function App() {
                 <Route path="/services/my" element={<Suspense fallback={<PageFallback />}><MyServices /></Suspense>} />
                 <Route path="/bookings" element={<Suspense fallback={<PageFallback />}><MyBookings /></Suspense>} />
                 <Route path="/services/:id/book" element={<Suspense fallback={<PageFallback />}><BookingForm /></Suspense>} />
-                <Route path="/admin/reviews" element={<Suspense fallback={<PageFallback />}><AdminReviews /></Suspense>} />
                 <Route path="/notifications" element={<Suspense fallback={<PageFallback />}><NotificationsPage /></Suspense>} />
+                <Route path="/errands/:id/applications" element={<Suspense fallback={<PageFallback />}><ErrandApplications /></Suspense>} />
+                <Route path="/my-applications" element={<Suspense fallback={<PageFallback />}><MyApplications /></Suspense>} />
               </Route>
             </Route>
           </Routes>

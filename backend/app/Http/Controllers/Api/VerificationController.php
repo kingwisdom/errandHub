@@ -50,6 +50,13 @@ class VerificationController extends Controller
         )->response();
     }
 
+    public function all(Request $request): JsonResponse
+    {
+        return VerificationResource::collection(
+            $this->verificationService->listAll($request->get('status'))
+        )->response();
+    }
+
     public function approve(Request $request, $id): JsonResponse
     {
         $request->validate(['note' => 'nullable|string']);

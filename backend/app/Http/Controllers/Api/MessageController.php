@@ -19,7 +19,7 @@ class MessageController extends Controller
     {
         return MessageResource::collection(
             $this->messageService->listForRequest($request->user()->id, $requestId)
-        );
+        )->response();
     }
 
     public function store(StoreMessageRequest $request, $requestId): JsonResponse

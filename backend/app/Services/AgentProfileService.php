@@ -75,19 +75,28 @@ class AgentProfileService
 
     public function findById(string $id): Model
     {
-        return AgentProfile::with('user')
+        $profile = AgentProfile::with('user')
             ->whereHas('user', fn(Builder $q) => $q->where('role', 'agent'))
-            ->findOrFail($id);
+            ->find($id);
+
+        if (!$profile) {
+            $profile = AgentProfile::with('user')
+                ->whereHas('user', fn(Builder $q) => $q->where('role', 'agent'))
+                ->where('user_id', $id)
+                ->firstOrFail();
+        }
+
+        return $profile;
     }
 
-    public function findByUser(int $userId): Model
+    public function findByUser(string $userId): Model
     {
         return AgentProfile::with('user')
             ->where('user_id', $userId)
             ->firstOrFail();
     }
 
-    public function upsert(int $userId, array $data): AgentProfile
+    public function upsert(string $userId, array $data): AgentProfile
     {
         $data['user_id'] = $userId;
 
@@ -102,7 +111,7 @@ class AgentProfileService
         return $profile;
     }
 
-    public function update(int $userId, string $profileId, array $data): AgentProfile
+    public function update(string $userId, string $profileId, array $data): AgentProfile
     {
         $profile = AgentProfile::where('user_id', $userId)->findOrFail($profileId);
         $profile->update($data);

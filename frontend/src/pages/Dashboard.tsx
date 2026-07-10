@@ -365,7 +365,7 @@ export default function Dashboard() {
                             <td className="p-4 capitalize text-text-secondary">{v.type?.replace(/_/g, ' ')}</td>
                             <td className="p-4 text-text-secondary">{new Date(v.created_at).toLocaleDateString()}</td>
                             <td className="p-4 text-right">
-                              <Link to="/my-profile" className="text-sm font-medium hover:underline" style={{ color: '#1E3A8A' }}>
+                              <Link to="/admin/verifications" className="text-sm font-medium hover:underline" style={{ color: '#1E3A8A' }}>
                                 Review →
                               </Link>
                             </td>

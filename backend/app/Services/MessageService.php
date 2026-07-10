@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class MessageService
 {
-    public function listForRequest(int $userId, string $requestId): Collection
+    public function listForRequest(string $userId, string $requestId): Collection
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -23,7 +23,7 @@ class MessageService
             ->get();
     }
 
-    public function send(int $userId, string $requestId, array $data): Message
+    public function send(string $userId, string $requestId, array $data): Message
     {
         $request = ServiceRequest::findOrFail($requestId);
 
@@ -52,7 +52,7 @@ class MessageService
         return $message;
     }
 
-    public function markAsRead(int $userId, string $requestId): int
+    public function markAsRead(string $userId, string $requestId): int
     {
         $request = ServiceRequest::findOrFail($requestId);
 

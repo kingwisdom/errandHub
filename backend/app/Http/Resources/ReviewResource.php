@@ -20,7 +20,7 @@ class ReviewResource extends JsonResource
             'timeliness_rating' => $this->timeliness_rating,
             'quality_rating' => $this->quality_rating,
             'comment' => $this->comment,
-            'is_hidden' => $this->is_hidden,
+            'is_visible' => $this->is_visible,
             'created_at' => $this->created_at,
         ];
     }
