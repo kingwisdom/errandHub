@@ -1,0 +1,17 @@
+node_modules
+.git
+.env
+.env.*
+!.env.docker
+*.md
+.vscode
+.idea
+docker-compose*.yml
+deploy.sh
+.github
+frontend/dist
+frontend/node_modules
+backend/vendor
+backend/node_modules
+backend/storage/logs/*.log
+backend/bootstrap/cache/*.php

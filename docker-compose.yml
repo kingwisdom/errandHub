@@ -1,0 +1,183 @@
+services:
+
+  # ─── MySQL ────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: errandhub-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-errandhub}
+      MYSQL_USER: ${DB_USERNAME:-errandhub}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - errandhub_mysql_data:/var/lib/mysql
+    networks:
+      - errandhub
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend (Nginx + PHP-FPM) ───────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: errandhub-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-ErrandHub}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-https://errandhub.drivesolution.cloud}
+      APP_DEBUG: "false"
+      FRONTEND_URL: ${FRONTEND_URL:-https://errandhub.drivesolution.cloud}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-errandhub}
+      DB_USERNAME: ${DB_USERNAME:-errandhub}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      SESSION_DRIVER: database
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-.drivesolution.cloud}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-errandhub.drivesolution.cloud}
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: https
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-}
+      REVERB_APP_ID: ${REVERB_APP_ID:-}
+      MAIL_MAILER: log
+    networks:
+      - errandhub
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.errandhub-backend.rule=Host(`${TRAEFIK_DOMAIN:-errandhub.drivesolution.cloud}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.errandhub-backend.entrypoints=websecure"
+      - "traefik.http.routers.errandhub-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.errandhub-backend.loadbalancer.server.port=9000"
+      - "traefik.http.routers.errandhub-backend.middlewares=errandhub-headers"
+      - "traefik.http.middlewares.errandhub-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.errandhub-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.errandhub-headers.headers.forceSTSHeader=true"
+
+  # ─── Frontend (Nginx — static React) ──────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-}
+        VITE_REVERB_HOST: ${TRAEFIK_DOMAIN:-errandhub.drivesolution.cloud}
+        VITE_REVERB_PORT: "443"
+        VITE_REVERB_SCHEME: wss
+    container_name: errandhub-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - errandhub
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.errandhub-frontend.rule=Host(`${TRAEFIK_DOMAIN:-errandhub.drivesolution.cloud}`)"
+      - "traefik.http.routers.errandhub-frontend.entrypoints=websecure"
+      - "traefik.http.routers.errandhub-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.errandhub-frontend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.errandhub-frontend.middlewares=errandhub-headers"
+
+  # ─── Reverb (WebSocket server) ────────────────────
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: errandhub-reverb
+    restart: unless-stopped
+    command: php artisan reverb:start --port=8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-ErrandHub}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-https://errandhub.drivesolution.cloud}
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-errandhub}
+      DB_USERNAME: ${DB_USERNAME:-errandhub}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: 0.0.0.0
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: https
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-}
+      REVERB_APP_ID: ${REVERB_APP_ID:-}
+      FRONTEND_URL: ${FRONTEND_URL:-https://errandhub.drivesolution.cloud}
+    networks:
+      - errandhub
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.errandhub-reverb.rule=Host(`${REVERB_DOMAIN:-reverb.errandhub.drivesolution.cloud}`)"
+      - "traefik.http.routers.errandhub-reverb.entrypoints=websecure"
+      - "traefik.http.routers.errandhub-reverb.tls.certresolver=letsencrypt"
+      - "traefik.http.services.errandhub-reverb.loadbalancer.server.port=8080"
+
+  # ─── Queue Worker ─────────────────────────────────
+  queue:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: errandhub-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-ErrandHub}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-https://errandhub.drivesolution.cloud}
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-errandhub}
+      DB_USERNAME: ${DB_USERNAME:-errandhub}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: https
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-}
+      REVERB_APP_ID: ${REVERB_APP_ID:-}
+      FRONTEND_URL: ${FRONTEND_URL:-https://errandhub.drivesolution.cloud}
+    networks:
+      - errandhub
+
+volumes:
+  errandhub_mysql_data:
+
+networks:
+  errandhub:
+    driver: bridge
+  traefik:
+    external: true

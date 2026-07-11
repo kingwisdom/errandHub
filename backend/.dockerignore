@@ -1,0 +1,9 @@
+.git
+.env
+storage/logs/*.log
+bootstrap/cache/*.php
+vendor
+node_modules
+.vscode
+.idea
+*.md
