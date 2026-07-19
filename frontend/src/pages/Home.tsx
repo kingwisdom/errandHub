@@ -82,7 +82,7 @@ export default function Home() {
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (heroSearch.trim()) {
-      navigate(`/services?search=${encodeURIComponent(heroSearch.trim())}`);
+      navigate(`/nearby?query=${encodeURIComponent(heroSearch.trim())}`);
     }
   };
 
@@ -140,7 +140,7 @@ export default function Home() {
                   type="text"
                   value={heroSearch}
                   onChange={(e) => setHeroSearch(e.target.value)}
-                  placeholder="What do you need done today?"
+                  placeholder="Find electricians, restaurants, services near you..."
                   className="flex-1 px-4 py-3 text-gray-900 placeholder-gray-400 bg-transparent outline-none text-base"
                 />
                 <button type="submit"

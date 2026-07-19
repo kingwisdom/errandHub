@@ -40,6 +40,17 @@ const ErrandsBrowse = lazy(() => import('./pages/ErrandsBrowse'));
 const ErrandDetail = lazy(() => import('./pages/ErrandDetail'));
 const ErrandApplications = lazy(() => import('./pages/ErrandApplications'));
 const MyApplications = lazy(() => import('./pages/MyApplications'));
+const NearbySearch = lazy(() => import('./pages/NearbySearch'));
+
+const AiHomePage = lazy(() => import('./pages/AiHomePage'));
+const AiChatPage = lazy(() => import('./pages/AiChatPage'));
+const AiWorkflowsPage = lazy(() => import('./pages/AiWorkflowsPage'));
+const AiWorkflowPage = lazy(() => import('./pages/AiWorkflowPage'));
+const FinanceDashboardPage = lazy(() => import('./pages/FinanceDashboardPage'));
+const ImmigrationDashboardPage = lazy(() => import('./pages/ImmigrationDashboardPage'));
+const ShoppingDashboardPage = lazy(() => import('./pages/ShoppingDashboardPage'));
+const PropertyDashboardPage = lazy(() => import('./pages/PropertyDashboardPage'));
+const TravelDashboardPage = lazy(() => import('./pages/TravelDashboardPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30000 } },
@@ -59,7 +70,7 @@ export default function App() {
       <BrowserRouter>
         <ErrorBoundary>
           <Routes>
-            {/* Admin routes — separate layout with vertical sidebar */}
+            {/* Admin routes */}
             <Route element={<AdminRoute />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin/analytics" element={<Suspense fallback={<PageFallback />}><AdminAnalytics /></Suspense>} />
@@ -72,8 +83,9 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* All other routes — standard layout with top navbar */}
+            {/* All other routes — unified layout */}
             <Route element={<Layout />}>
+              {/* Public routes */}
               <Route path="/" element={<Suspense fallback={<PageFallback />}><Home /></Suspense>} />
               <Route path="/login" element={<Suspense fallback={<PageFallback />}><Login /></Suspense>} />
               <Route path="/register" element={<Suspense fallback={<PageFallback />}><Register /></Suspense>} />
@@ -87,6 +99,22 @@ export default function App() {
               <Route path="/errands" element={<Suspense fallback={<PageFallback />}><ErrandsBrowse /></Suspense>} />
               <Route path="/errands/:id" element={<Suspense fallback={<PageFallback />}><ErrandDetail /></Suspense>} />
               <Route path="/requests/browse" element={<Suspense fallback={<PageFallback />}><MyRequests /></Suspense>} />
+              <Route path="/nearby" element={<Suspense fallback={<PageFallback />}><NearbySearch /></Suspense>} />
+
+              {/* AI routes — guest accessible */}
+              <Route path="/ai" element={<Suspense fallback={<PageFallback />}><AiHomePage /></Suspense>} />
+              <Route path="/ai/chat" element={<Suspense fallback={<PageFallback />}><AiChatPage /></Suspense>} />
+              <Route path="/ai/chat/:conversationId" element={<Suspense fallback={<PageFallback />}><AiChatPage /></Suspense>} />
+              <Route path="/ai/workflows" element={<Suspense fallback={<PageFallback />}><AiWorkflowsPage /></Suspense>} />
+              <Route path="/ai/workflow/:slug" element={<Suspense fallback={<PageFallback />}><AiWorkflowPage /></Suspense>} />
+              <Route path="/ai/workflow/:slug/:userWorkflowId" element={<Suspense fallback={<PageFallback />}><AiWorkflowPage /></Suspense>} />
+              <Route path="/ai/workflow/finance/:userWorkflowId/dashboard" element={<Suspense fallback={<PageFallback />}><FinanceDashboardPage /></Suspense>} />
+              <Route path="/ai/workflow/immigration/:userWorkflowId/dashboard" element={<Suspense fallback={<PageFallback />}><ImmigrationDashboardPage /></Suspense>} />
+              <Route path="/ai/workflow/shopping/:userWorkflowId/dashboard" element={<Suspense fallback={<PageFallback />}><ShoppingDashboardPage /></Suspense>} />
+              <Route path="/ai/workflow/property/:userWorkflowId/dashboard" element={<Suspense fallback={<PageFallback />}><PropertyDashboardPage /></Suspense>} />
+              <Route path="/ai/workflow/travel/:userWorkflowId/dashboard" element={<Suspense fallback={<PageFallback />}><TravelDashboardPage /></Suspense>} />
+
+              {/* Protected routes — require auth */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Suspense fallback={<PageFallback />}><Dashboard /></Suspense>} />
                 <Route path="/requests" element={<Suspense fallback={<PageFallback />}><MyRequests /></Suspense>} />

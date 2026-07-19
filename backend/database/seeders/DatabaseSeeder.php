@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             CategorySeeder::class,
             DemoDataSeeder::class,
+            WorkflowSeeder::class,
+            PromptTemplateSeeder::class,
         ]);
     }
 }

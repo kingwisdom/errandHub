@@ -26,6 +26,7 @@ class User extends Authenticatable implements CanResetPasswordContract, MustVeri
         'email',
         'password',
         'role',
+        'guest_uuid',
         'phone',
         'avatar',
         'is_verified',
@@ -89,5 +90,15 @@ class User extends Authenticatable implements CanResetPasswordContract, MustVeri
     public function notificationPreferences()
     {
         return $this->hasOne(\App\Models\NotificationPreference::class);
+    }
+
+    public function aiConversations()
+    {
+        return $this->hasMany(AiConversation::class, 'guest_uuid', 'guest_uuid');
+    }
+
+    public function userWorkflows()
+    {
+        return $this->hasMany(UserWorkflow::class, 'guest_uuid', 'guest_uuid');
     }
 }

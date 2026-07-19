@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY', ''),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', ''),
+        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+        'max_context_tokens' => env('GEMINI_MAX_CONTEXT_TOKENS', 6144),
+        'web_search' => env('GEMINI_WEB_SEARCH', true),
+    ],
+
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY', ''),
+        'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
+        'max_context_tokens' => env('GROQ_MAX_CONTEXT_TOKENS', 6144),
+    ],
+
 ];

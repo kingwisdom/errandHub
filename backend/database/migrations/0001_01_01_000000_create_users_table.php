@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role')->default('client');
+            $table->uuid('guest_uuid')->nullable()->index();
             $table->string('phone')->nullable();
             $table->string('avatar')->nullable();
             $table->boolean('is_verified')->default(false);
